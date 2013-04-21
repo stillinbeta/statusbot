@@ -1,9 +1,12 @@
+from __future__ import print_function
+
 from datetime import datetime, timedelta
 import getpass
 
 import oauth2 as oauth
 from twisted.application import service
-from twisted.internet import reactor, task
+from twisted.internet.defer import Deferred
+from twisted.internet.task import LoopingCall
 from twisted.words.protocols.jabber.jid import JID
 from wokkel.client import XMPPClient
 from wokkel.xmppim import PresenceProtocol
@@ -18,54 +21,56 @@ CONSUMER = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
 
 class PresenceFetcher(PresenceProtocol):
     RECIEVE_FOR_SECS = 2
-    def __init__(self, account, interval=10):
-        super(PresenceFetcher, self).__init__()
-        self.account = JID(account)
-        if interval - self.RECIEVE_FOR_SECS <= 0:
-            raise ValueError("Interval must be greater than {}".format(
-                              self.RECIEVE_FOR_SECS))
 
-        self.interval = interval - self.RECIEVE_FOR_SECS
-
-        self.finish_collecting = None
-        self.send_results = None
-        self.statuses = set()
-
-    def sendResults(self):
-        if self.statuses:
-            print(self.statuses.pop())
+    class StatusJobState(object):
+        def __init__(self, deferred):
+            self.deferred = deferred
             self.statuses = set()
-        self.send_results = None
-        self.finish_collecting = None
-        reactor.callLater(self.interval, self.doProbe)
+
+    def __init__(self):
+        super(PresenceFetcher, self).__init__()
+        self.statusJobs = {}
+
+    def sendResults(self, userhost):
+        jobState = self.statusJobs.pop(userhost)
+        jobState.deferred.callback(list(jobState.statuses))
 
     def availableReceived(self, presence):
-        self.statuses |= { s for s in presence.statuses.values() if s}
+        userhost = presence.sender.userhost()
+        jobState = self.statusJobs[userhost]
+        jobState.statuses |= {s for s in presence.statuses.values() if s}
 
-        if self.finish_collecting is None:
-            self.finish_collecting = (
-                datetime.now() + timedelta(seconds=self.RECIEVE_FOR_SECS))
-        if self.send_results is not None:
-            self.send_results.cancel()
+    def doProbe(self, account):
+        d = Deferred()
 
-        call_at = self.finish_collecting - datetime.now()
-        self.send_results = reactor.callLater(call_at.seconds,
-                                              self.sendResults)
+        from twisted.internet import reactor
+        reactor.callLater(self.RECIEVE_FOR_SECS,
+                          self.sendResults,
+                          account.userhost())
+        self.statusJobs[account.userhost()] = self.StatusJobState(d)
+        self.probe(account)
+        return d
 
-    def doProbe(self):
-        self.probe(self.account)
+class StatusProxy(object):
+    def __init__(self, username, password):
+        self.client = XMPPClient(JID(username), password)
+        self.presence = PresenceFetcher()
+        self.presence.setHandlerParent(self.client)
+        self.client.startService()
 
-    def connectionInitialized(self):
-        super(PresenceFetcher, self).connectionInitialized()
-        d = self.doProbe()
-        print("Initialised")
+    def getStatuses(self, account):
+        if isinstance(account, str):
+            account = JID(account)
+        return self.presence.doProbe(account)
 
-application = service.Application("statusbot")
+proxy = StatusProxy('thejapanesegeek@gmail.com/Twisted', getpass.getpass())
 
-client = XMPPClient(JID('thejapanesegeek@gmail.com/roster'), getpass.getpass())
-presence = PresenceFetcher('ellie@stillinbeta.com')
-presence.setHandlerParent(client)
-client.setServiceParent(application)
+def makeCall():
+    d = proxy.getStatuses('ellie@stillinbeta.com')
+    d.addCallback(print)
+    return d
 
+LoopingCall(makeCall).start(10)
 
-
+from twisted.internet import reactor
+reactor.run()
