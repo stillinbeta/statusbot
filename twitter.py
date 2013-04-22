@@ -10,15 +10,13 @@ from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer
 from zope.interface.declarations import implements
 
+from statusbot import config
+
 # User-specific
-ACCESS_KEY = "1332175644-cfubrDY4KqrKoAuPj7kVYTClQQTK7CZkLhdv22W"
-ACCESS_SECRET= "sg3y8BdqREdTEwX6wXNfIvZIqtXm1eFzWow4Gd3f5g"
-ACCESS_TOKEN = oauth.Token(key=ACCESS_KEY, secret=ACCESS_SECRET)
+ACCESS_TOKEN = oauth.Token(key=config.ACCESS_KEY, secret=config.ACCESS_SECRET)
 
 # Application-specific
-CONSUMER_KEY = '1QtQ0EMDXvymwNXiFfUg'
-CONSUMER_SECRET = '4fj4RtwIjlIantT1m6VWrrS9QYW5RTtKK4Sjgd6Kw'
-CONSUMER = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
+CONSUMER = oauth.Consumer(config.CONSUMER_KEY, config.CONSUMER_SECRET)
 
 class Tweeter(object):
     TWEET_URL = "http://api.twitter.com/1.1/statuses/update.json"

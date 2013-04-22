@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 import getpass
 
 import oauth2 as oauth
-from twisted.application import service
 from twisted.internet.defer import Deferred
 from twisted.internet.task import LoopingCall
 from twisted.words.protocols.jabber.jid import JID
@@ -12,7 +11,7 @@ from wokkel.client import XMPPClient
 from wokkel.xmppim import PresenceProtocol
 
 class PresenceFetcher(PresenceProtocol):
-    RECIEVE_FOR_SECS = 2
+    RECIEVE_FOR_SECS = 5
 
     class StatusJobState(object):
         def __init__(self, deferred):
@@ -33,6 +32,8 @@ class PresenceFetcher(PresenceProtocol):
         jobState.statuses |= {s for s in presence.statuses.values() if s}
 
     def doProbe(self, account):
+        if isinstance(account, str):
+            account = JID(account)
         d = Deferred()
 
         from twisted.internet import reactor
@@ -44,8 +45,8 @@ class PresenceFetcher(PresenceProtocol):
         return d
 
 class StatusProxy(object):
-    def __init__(self, username, password):
-        self.client = XMPPClient(JID(username), password)
+    def __init__(self, username, password, host='talk.google.com'):
+        self.client = XMPPClient(JID(username), password,host)
         self.presence = PresenceFetcher()
         self.presence.setHandlerParent(self.client)
         self.client.startService()
@@ -55,14 +56,18 @@ class StatusProxy(object):
             account = JID(account)
         return self.presence.doProbe(account)
 
-proxy = StatusProxy('thejapanesegeek@gmail.com/Twisted', getpass.getpass())
+if __name__ == "__main__":
+    proxy = StatusProxy('bot@stillinbeta.com/Twisted',
+)
+    #proxy = StatusProxy('thejapanesegeek@gmail.com',
+    #                    getpass.getpass())
 
-def makeCall():
-    d = proxy.getStatuses('ellie@stillinbeta.com')
-    d.addCallback(print)
-    return d
+    def makeCall():
+        d = proxy.getStatuses('ellie@stillinbeta.com')
+        d.addCallback(print)
+        return d
 
-LoopingCall(makeCall).start(10)
+    LoopingCall(makeCall).start(10)
 
-from twisted.internet import reactor
-reactor.run()
+    from twisted.internet import reactor
+    reactor.run()
