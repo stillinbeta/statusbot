@@ -1,0 +1,21 @@
+# The user's access token and access secret for Twitter.
+# You can get this using get_auth.py
+ACCESS_KEY = ""
+ACCESS_SECRET= ""
+
+# Your app's consumer secret. Get one here: https://dev.twitter.com/apps
+CONSUMER_KEY = ""
+CONSUMER_SECRET = ""
+
+# Don't want to store your jabber account password in the clear?
+# Get another account!
+JABBER_CLIENT_USER = ""
+JABBER_CLIENT_PASS = ""
+JABBER_CLIENT_HOST = "talk.google.com"
+
+# Who's status are we looking at?
+JABBER_TARGET = ""
+
+# How often should we check statuses
+REFRESH_INTERVAL_SECS = 60 * 60
+
