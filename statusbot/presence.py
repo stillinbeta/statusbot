@@ -1,11 +1,10 @@
 from __future__ import print_function
 
-from datetime import datetime, timedelta
-import getpass
+import logging
 
 import oauth2 as oauth
 from twisted.internet.defer import Deferred
-from twisted.internet.task import LoopingCall
+from twisted.python import log
 from twisted.words.protocols.jabber.jid import JID
 from wokkel.client import XMPPClient
 from wokkel.xmppim import PresenceProtocol
@@ -28,8 +27,12 @@ class PresenceFetcher(PresenceProtocol):
 
     def availableReceived(self, presence):
         userhost = presence.sender.userhost()
-        jobState = self.statusJobs[userhost]
-        jobState.statuses |= {s for s in presence.statuses.values() if s}
+        jobState = self.statusJobs.get(userhost)
+        if not jobState:
+            log.msg("Received status after results sent",
+                    logLevel=logging.WARNING)
+        else:
+            jobState.statuses |= {s for s in presence.statuses.values() if s}
 
     def doProbe(self, account):
         if isinstance(account, str):
@@ -55,19 +58,3 @@ class StatusProxy(object):
         if isinstance(account, str):
             account = JID(account)
         return self.presence.doProbe(account)
-
-if __name__ == "__main__":
-    proxy = StatusProxy('bot@stillinbeta.com/Twisted',
-)
-    #proxy = StatusProxy('thejapanesegeek@gmail.com',
-    #                    getpass.getpass())
-
-    def makeCall():
-        d = proxy.getStatuses('ellie@stillinbeta.com')
-        d.addCallback(print)
-        return d
-
-    LoopingCall(makeCall).start(10)
-
-    from twisted.internet import reactor
-    reactor.run()

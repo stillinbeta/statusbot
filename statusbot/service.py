@@ -28,7 +28,7 @@ class StatusBotService(service.Service):
 
     def stopService(self):
         service.Service.stopService(self)
-        self.LoopingCall.stop()
+        self.loopingCall.stop()
         self.client.stopService()
 
     def makeRequest(self):
@@ -55,5 +55,3 @@ class StatusBotService(service.Service):
             log.msg("Duplicate tweet, ignoring")
         else:
             log.err("Error tweeting {}: {}".format(code, body))
-
-__all__ = [StatusBotService]

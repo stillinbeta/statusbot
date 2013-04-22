@@ -87,16 +87,3 @@ class Tweeter(object):
         d = Deferred()
         response.deliverBody(self.SimpleReceiver(d, response.code))
         return d
-
-if __name__ == "__main__":
-    tweeter = Tweeter()
-    d = tweeter.tweet('WHAT IT IS')
-
-    from twisted.internet import reactor
-    def _cb(received):
-        print(received)
-        reactor.stop()
-
-    d.addCallback(_cb)
-
-    reactor.run()
