@@ -57,7 +57,7 @@ resp, content = client.request(access_token_url, "POST")
 access_token = dict(urlparse.parse_qsl(content))
 
 print "Access Token:"
-print " ACCESS_KEY = %s" % access_token['oauth_token']
-print " ACCESS_SECRET = %s" % access_token['oauth_token_secret']
+print 'ACCESS_KEY = "%s"' % access_token['oauth_token']
+print 'ACCESS_SECRET = "%s"' % access_token['oauth_token_secret']
 print
 print "Put the above lines in config.py, and you should be good to go"

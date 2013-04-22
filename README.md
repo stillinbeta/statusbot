@@ -13,8 +13,13 @@ work. Copy the config.pysample file to config.py, then fill in your
 CONSUMER\_TOKEN and CONSUMER\_SECRET. You can then run `get_auth.py` to
 get an ACCESS\_TOKEN and ACCESS\_SECRET.
 
+Once everything's set up in the config file, you can run
+`twisted -y statusbot.trac`
+
 I've not been able to find any other examples of interacting with Twitter
 using Twisted, so perhaps that will be useful to someone.
+
+
 
 [twitter]: https://dev.twitter.com/apps
 
