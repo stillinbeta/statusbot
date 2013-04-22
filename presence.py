@@ -11,14 +11,6 @@ from twisted.words.protocols.jabber.jid import JID
 from wokkel.client import XMPPClient
 from wokkel.xmppim import PresenceProtocol
 
-ACCESS_KEY="1332175644-5FcBe4THbpMyF0qYendykbdggnwMasMc1XhdGvL"
-ACCESS_SECRET="QiUHyn8ldmP6cu2BFOAb3V7zApobVmeDwEwrdRgI8"
-ACCESS_TOKEN = oauth.Token(ACCESS_KEY, ACCESS_SECRET)
-
-CONSUMER_KEY = '1QtQ0EMDXvymwNXiFfUg'
-CONSUMER_SECRET = '4fj4RtwIjlIantT1m6VWrrS9QYW5RTtKK4Sjgd6Kw'
-CONSUMER = oauth.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
-
 class PresenceFetcher(PresenceProtocol):
     RECIEVE_FOR_SECS = 2
 
