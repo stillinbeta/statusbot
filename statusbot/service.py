@@ -47,10 +47,10 @@ class StatusBotService(service.Service):
 
     def _receiveTweetResponse(self, result):
         code, body = result
-        body = json.loads(body)
         # 403 is probably a duplicate tweet
         if code == 200:
-            log.msg("Tweeted new status: " + body['text'])
+            decoded = json.loads(body)
+            log.msg("Tweeted new status: " + decoded['text'])
         elif code == 403:
             log.msg("Duplicate tweet, ignoring")
         else:
