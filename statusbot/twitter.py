@@ -151,8 +151,11 @@ class Tweeter(object):
             from twisted.internet import reactor
             reactor.callLater(self.FAILED_RESPONSE_RETRY_SECS,
                               self.get_previous_tweets)
+            return False
+        return True
 
-    def _send_queued_tweets(self):
-        while self.tweet_queue:
-            d, status = self.tweet_queue.pop()
-            d.callback(status)
+    def _send_queued_tweets(self, succeeded):
+        if succeeded:
+            while self.tweet_queue:
+                d, status = self.tweet_queue.pop()
+                d.callback(status)
