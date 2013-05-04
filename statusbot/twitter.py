@@ -96,7 +96,14 @@ class Tweeter(object):
                                headers=Headers(headers),
                                bodyProducer=self.StringProducer(auth_body))
         d.addCallback(receive_response)
+        # If it's a success, save it.
+        d.addCallback(self._save_tweeted)
         return d
+
+    def _save_tweeted(self, response, status):
+        self.previous_tweets.add(status)
+        # Pass through the response
+        return response
 
     def get_previous_tweets(self):
         params = {'trim_user': True, 'count': self.PREVIOUS_TWEET_COUNT}
